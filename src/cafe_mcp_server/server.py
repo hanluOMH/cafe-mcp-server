@@ -2,12 +2,44 @@
 
 from __future__ import annotations
 
+import os
+from typing import Literal
+
 from mcp.server.fastmcp import FastMCP
 
 from .recommender import explain_recommendation as build_explanation
 from .recommender import list_menu, recommend_coffee as choose_coffee
 
-mcp = FastMCP("cafe-recommendation")
+Transport = Literal["stdio", "sse", "streamable-http"]
+
+
+def _default_transport() -> Transport:
+    transport = os.getenv("MCP_TRANSPORT")
+    if transport:
+        if transport not in {"stdio", "sse", "streamable-http"}:
+            raise ValueError("MCP_TRANSPORT must be one of: stdio, sse, streamable-http")
+        return transport  # type: ignore[return-value]
+
+    if os.getenv("PORT"):
+        return "streamable-http"
+
+    return "stdio"
+
+
+def _host() -> str:
+    return os.getenv("HOST", "0.0.0.0" if os.getenv("PORT") else "127.0.0.1")
+
+
+def _port() -> int:
+    return int(os.getenv("PORT", "8000"))
+
+
+mcp = FastMCP(
+    "cafe-recommendation",
+    host=_host(),
+    port=_port(),
+    streamable_http_path=os.getenv("MCP_PATH", "/mcp"),
+)
 
 
 @mcp.tool()
@@ -58,8 +90,8 @@ def explain_recommendation(
 
 
 def main() -> None:
-    """Run the MCP server over stdio."""
-    mcp.run()
+    """Run stdio locally, or Streamable HTTP on Cloud Run when PORT is set."""
+    mcp.run(transport=_default_transport())
 
 
 if __name__ == "__main__":

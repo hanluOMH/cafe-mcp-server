@@ -21,6 +21,8 @@ python -m pip install -e ".[dev]"
 
 ## Run
 
+Local stdio MCP server:
+
 ```bash
 cafe-mcp-server
 ```
@@ -30,6 +32,32 @@ Equivalent module form:
 ```bash
 python -m cafe_mcp_server.server
 ```
+
+Cloud Run / HTTP mode:
+
+```bash
+PORT=8080 python -m cafe_mcp_server.server
+```
+
+When `PORT` is set, the server automatically uses Streamable HTTP, binds to `0.0.0.0:$PORT`, and exposes MCP at:
+
+```text
+/mcp
+```
+
+You can also force the transport explicitly:
+
+```bash
+MCP_TRANSPORT=streamable-http PORT=8080 python -m cafe_mcp_server.server
+MCP_TRANSPORT=stdio python -m cafe_mcp_server.server
+```
+
+For Cloud Run repository deployment with Buildpacks:
+
+- Build type: Buildpacks
+- Build context directory: `/`
+- Entrypoint: leave blank if Buildpacks uses the included `Procfile`, or set `python -m cafe_mcp_server.server`
+- Function target: leave blank
 
 ## Example MCP config
 

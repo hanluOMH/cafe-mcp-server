@@ -5,6 +5,42 @@ import pytest
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
+from cafe_mcp_server.server import _default_transport, _host, _port
+
+
+def test_defaults_to_stdio_without_port(monkeypatch):
+    monkeypatch.delenv("MCP_TRANSPORT", raising=False)
+    monkeypatch.delenv("PORT", raising=False)
+    monkeypatch.delenv("HOST", raising=False)
+
+    assert _default_transport() == "stdio"
+    assert _host() == "127.0.0.1"
+    assert _port() == 8000
+
+
+def test_port_switches_default_to_streamable_http(monkeypatch):
+    monkeypatch.delenv("MCP_TRANSPORT", raising=False)
+    monkeypatch.setenv("PORT", "9090")
+    monkeypatch.delenv("HOST", raising=False)
+
+    assert _default_transport() == "streamable-http"
+    assert _host() == "0.0.0.0"
+    assert _port() == 9090
+
+
+def test_explicit_transport_overrides_port(monkeypatch):
+    monkeypatch.setenv("MCP_TRANSPORT", "stdio")
+    monkeypatch.setenv("PORT", "9090")
+
+    assert _default_transport() == "stdio"
+
+
+def test_invalid_transport_fails(monkeypatch):
+    monkeypatch.setenv("MCP_TRANSPORT", "http")
+
+    with pytest.raises(ValueError, match="MCP_TRANSPORT"):
+        _default_transport()
+
 
 @pytest.mark.anyio
 async def test_recommend_coffee_tool_over_stdio():
