@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cafe-recommendation": {
+      "command": "python",
+      "args": [
+        "-m",
+        "cafe_mcp_server.server"
+      ],
+      "cwd": "/Users/hanlufeng/Desktop/AI-INSIGHT-REPORT/Ceilia/cafe-mcp-server"
+    }
+  }
+}

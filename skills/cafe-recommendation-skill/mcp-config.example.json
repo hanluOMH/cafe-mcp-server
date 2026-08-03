@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "cafe-recommendation": {
+      "url": "https://cafe-mcp-server-git-695741304915.us-west1.run.app/mcp",
+      "transport": "streamable-http",
+      "headers": {
+        "Accept": "application/json, text/event-stream"
+      }
+    }
+  }
+}
