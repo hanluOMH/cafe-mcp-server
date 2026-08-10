@@ -5,7 +5,14 @@ import pytest
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from cafe_mcp_server.server import _default_transport, _host, _port, mcp
+from cafe_mcp_server.server import (
+    MCP_ACCEPT_HEADER,
+    _default_transport,
+    _ensure_mcp_accept_header,
+    _host,
+    _port,
+    mcp,
+)
 
 
 def test_defaults_to_stdio_without_port(monkeypatch):
@@ -40,6 +47,19 @@ def test_invalid_transport_fails(monkeypatch):
 
     with pytest.raises(ValueError, match="MCP_TRANSPORT"):
         _default_transport()
+
+
+def test_adds_required_accept_header_when_missing():
+    assert _ensure_mcp_accept_header([]) == [(b"accept", MCP_ACCEPT_HEADER)]
+
+
+def test_replaces_incompatible_accept_header():
+    headers = [(b"host", b"example.test"), (b"accept", b"application/json")]
+
+    assert _ensure_mcp_accept_header(headers) == [
+        (b"host", b"example.test"),
+        (b"accept", MCP_ACCEPT_HEADER),
+    ]
 
 
 @pytest.mark.anyio

@@ -6,11 +6,34 @@ import os
 from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
+from starlette.types import ASGIApp, Receive, Scope, Send
+import uvicorn
 
 from .recommender import explain_recommendation as build_explanation
 from .recommender import list_menu, recommend_coffee as choose_coffee
 
 Transport = Literal["stdio", "sse", "streamable-http"]
+MCP_ACCEPT_HEADER = b"application/json, text/event-stream"
+
+
+def _ensure_mcp_accept_header(headers: list[tuple[bytes, bytes]]) -> list[tuple[bytes, bytes]]:
+    """Make Streamable MCP discovery compatible with XiaoYi's HTTP client."""
+    return [
+        (key, MCP_ACCEPT_HEADER) if key.lower() == b"accept" else (key, value)
+        for key, value in headers
+    ] or [(b"accept", MCP_ACCEPT_HEADER)]
+
+
+class XiaoYiAcceptCompatibilityMiddleware:
+    """Supply the Streamable MCP media types XiaoYi omits during tool discovery."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and scope["path"] == "/mcp":
+            scope = {**scope, "headers": _ensure_mcp_accept_header(list(scope["headers"]))}
+        await self.app(scope, receive, send)
 
 
 def _default_transport() -> Transport:
@@ -91,7 +114,13 @@ def explain_recommendation(
 
 def main() -> None:
     """Run stdio locally, or Streamable HTTP on Cloud Run when PORT is set."""
-    mcp.run(transport=_default_transport())
+    transport = _default_transport()
+    if transport == "streamable-http":
+        app = XiaoYiAcceptCompatibilityMiddleware(mcp.streamable_http_app())
+        uvicorn.run(app, host=_host(), port=_port())
+        return
+
+    mcp.run(transport=transport)
 
 
 if __name__ == "__main__":
