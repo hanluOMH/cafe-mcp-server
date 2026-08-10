@@ -97,6 +97,6 @@ async def test_recommend_coffee_tool_over_stdio():
                 },
             )
 
-    payload = json.loads(result.content[0].text)
+    payload = json.loads(result.content[0].text)["result"]
     assert payload["id"] == "cold_brew"
     assert payload["name"] == "Cold Brew"

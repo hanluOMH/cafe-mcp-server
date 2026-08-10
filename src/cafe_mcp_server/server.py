@@ -6,6 +6,7 @@ import os
 from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel
 from starlette.types import ASGIApp, Receive, Scope, Send
 import uvicorn
 
@@ -14,6 +15,12 @@ from .recommender import list_menu, recommend_coffee as choose_coffee
 
 Transport = Literal["stdio", "sse", "streamable-http"]
 MCP_ACCEPT_HEADER = b"application/json, text/event-stream"
+
+
+class RecommendCoffeeResponse(BaseModel):
+    """Explicit structured output accepted by XiaoYi's MCP registry."""
+
+    result: dict[str, Any]
 
 
 def _ensure_mcp_accept_header(headers: list[tuple[bytes, bytes]]) -> list[tuple[bytes, bytes]]:
@@ -77,7 +84,7 @@ def recommend_coffee(
     prefer_milk: bool = None,
     caffeine: str = "",
     temperature: str = "",
-) -> dict[str, Any]:
+) -> RecommendCoffeeResponse:
     """Recommend a coffee from mood and simple preferences.
 
     Args:
@@ -86,11 +93,13 @@ def recommend_coffee(
         caffeine: Optional caffeine level: low, medium, or high.
         temperature: Optional drink style: hot or cold.
     """
-    return choose_coffee(
-        mood=mood,
-        prefer_milk=prefer_milk,
-        caffeine=caffeine,
-        temperature=temperature,
+    return RecommendCoffeeResponse(
+        result=choose_coffee(
+            mood=mood,
+            prefer_milk=prefer_milk,
+            caffeine=caffeine,
+            temperature=temperature,
+        )
     )
 
 
