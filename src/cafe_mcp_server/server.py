@@ -74,9 +74,9 @@ def list_coffee_menu() -> list[dict]:
 @mcp.tool()
 def recommend_coffee(
     mood: str = "",
-    prefer_milk: bool | None = None,
-    caffeine: str | None = None,
-    temperature: str | None = None,
+    prefer_milk: bool = None,
+    caffeine: str = "",
+    temperature: str = "",
 ) -> dict[str, Any]:
     """Recommend a coffee from mood and simple preferences.
 
@@ -98,9 +98,9 @@ def recommend_coffee(
 def explain_recommendation(
     coffee_id: str,
     mood: str = "",
-    prefer_milk: bool | None = None,
-    caffeine: str | None = None,
-    temperature: str | None = None,
+    prefer_milk: bool = None,
+    caffeine: str = "",
+    temperature: str = "",
 ) -> str:
     """Explain a coffee choice against the same preference inputs."""
     return build_explanation(

@@ -73,6 +73,9 @@ async def test_all_tools_publish_output_schemas():
     }
     assert all(tool.outputSchema is not None for tool in tools)
 
+    for tool in tools:
+        assert "anyOf" not in str(tool.inputSchema)
+
 
 @pytest.mark.anyio
 async def test_recommend_coffee_tool_over_stdio():
