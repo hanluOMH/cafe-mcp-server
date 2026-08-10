@@ -5,7 +5,7 @@ import pytest
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-from cafe_mcp_server.server import _default_transport, _host, _port
+from cafe_mcp_server.server import _default_transport, _host, _port, mcp
 
 
 def test_defaults_to_stdio_without_port(monkeypatch):
@@ -40,6 +40,18 @@ def test_invalid_transport_fails(monkeypatch):
 
     with pytest.raises(ValueError, match="MCP_TRANSPORT"):
         _default_transport()
+
+
+@pytest.mark.anyio
+async def test_all_tools_publish_output_schemas():
+    tools = await mcp.list_tools()
+
+    assert {tool.name for tool in tools} == {
+        "list_coffee_menu",
+        "recommend_coffee",
+        "explain_recommendation",
+    }
+    assert all(tool.outputSchema is not None for tool in tools)
 
 
 @pytest.mark.anyio

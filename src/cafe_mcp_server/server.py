@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Literal
+from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 
@@ -54,7 +54,7 @@ def recommend_coffee(
     prefer_milk: bool | None = None,
     caffeine: str | None = None,
     temperature: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Recommend a coffee from mood and simple preferences.
 
     Args:
